@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Struk Digital · Indonesian Bakery</title>
+<meta name="theme-color" content="#7B2D3A">
+<style>
+:root{ --g:#7B2D3A; --bg:#F7F3F4; --text:#2A1A1E; --text2:#6B4A52; --border:#E8DADD; }
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--text);}
+.wrap{max-width:440px;margin:0 auto;padding:20px 16px 40px;}
+.card{background:#fff;border:1.5px solid var(--border);border-radius:18px;padding:18px 14px;box-shadow:0 6px 24px rgba(123,45,58,.08);}
+.logo{display:block;margin:0 auto 8px;width:200px;image-rendering:pixelated;}
+pre{font-family:"Courier New",ui-monospace,monospace;font-size:13px;line-height:1.45;margin:0;white-space:pre;overflow-x:auto;color:#000;}
+.btn{display:block;width:100%;margin-top:14px;padding:14px;border:none;border-radius:12px;background:var(--g);color:#fff;font-size:15px;font-weight:700;cursor:pointer;}
+.muted{color:var(--text2);text-align:center;font-size:13px;margin-top:14px;}
+.msg{text-align:center;padding:60px 10px;color:var(--text2);}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="msg">Memuat struk…</div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const sb = supabase.createClient('https://usfehuwxyvqvjhveeoxx.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzZmVodXd4eXZxdmpodmVlb3h4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNDg1MzcsImV4cCI6MjA5NjkyNDUzN30.8zEUKF1qcBUXyGu3a50k2v92UbdXKbZ2xhJnb2blobY', { auth:{ persistSession:false, autoRefreshToken:false, detectSessionInUrl:false } });
+const BRANCHES = { melur:'Jl. Melur', delima:'Jl. Delima' };
+const PAY = { cash:'Cash', qris:'QRIS', transfer:'Transfer', debit:'Debit', gofood:'GoFood' };
+const LOGO_W = 256, LOGO_H = 118, LOGO_B64 = 'AAAAAAAAAAAAAAAAAAAP/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//gAAf/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH/gAAAP/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/4AAAAH/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH+AAAAAP+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAP4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8AAAAAAfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPwAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAB8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAAHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAAfAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8AAAAAAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPwAAAAAB/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/gAAAAAP4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/gAAAAD/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAAAAf8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+AAAAD/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP4AAAAP/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAf/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAA//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAH/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAH+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAH8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAA/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAB+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAAD4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAAPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAA+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAAH4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAAfgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAAD8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH4AAAAAAfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgAAAAAH+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB+AAAAAB/4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf///////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB///////+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH///////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/////4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfgADgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/4A/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAAAD//4H/gAAAAAAAAAAAAAAAAH4AAAAAAAAAAA//8AAAAf4f4//AAAAAAAAAAAAAAAAA/wAAAAAAAAAAA/+AAAAB/AP/48AAAAAAAAAAAAAAAAD/AAAAAAAAAAAB/wAAAAH4AP/DwAAAAAAAAAAAAAAAAP8AAAAAAAAAAAD/AAAAAfgAP8PAAAAAAAAAAAAAAAAA/wAAAAAAAAAAAP8AAAAB8AAf/4AAAAAAAAAAAAAAAAD/AAAAAAAAAAAA/wAAAADgAB//AAAAAAAAAAAAAAAAAH4AAAAAAAAAAAD/AAAAAAAAH/4AAAAAAAAAAAAAAAAAGAAAAAAAAAAAAP8AAAAAAAAfwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/wAAAAAAAB/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/AAYHAAAcH8AAeAAA4HAAAOAAAcAABgAHAGABwOAAAP8AHz/gAP+fwAf/AAPn/gAH/gAP/YAfAD/g8APH/AAA/wB///AB///AH//AB///AB//gD//wH8A//vwD//+AAD/Af//+Af//8A/z/Af//+AP5/Afx/B/wH///A///8AAP8D///4B/h/wH8D8H///4B+D+D+B8P/A/wf8P///wAA/wf/A/wP8D/A/gP4f/B/gPwH4P4Dw/8D+A/w/+B/AAD/AP8D/A/gH8D+Afwf4D+B/Afw/gHA/wf4B/A/wH+AAP8A/wH8H+Afwf4B/A/gP4H8B/H/gOD/B/AH8B/Af4AA/wD/AfwfwB/B/AH+D+A/gf//8P/gQP8H8AfwH8B/gAD/AP8B/B/AH8H8Af4P4D+D///w//wA/w/wB/AfwH+AAP8A/wH8H8AfwfwA/g/gP4P///D//4D/D/AH8B/Af4AA/wD/AfwfwB/B/AD+D+A/g/wAAH//wP8P8AfwH8B/gAD/AP8B/B/AH8H8AP4P4D+D/AAAP//g/w/wB/AfwH+AAP8A/wH8H8AfwfwA/g/gP4P8AAAP/+D/D/AH8B/Af4AA/wD/AfwfwB/B/AH+D+A/g/wAAAH/8P8P8AfwH8B/gAD/AP8B/B/AH8H8Af4P4D+B/AAhgD/w/wfwB/AfwH+AAP8A/wH8H+Afwf4B/A/gP4H8ADnAD/D/B/AH8B/Af4AA/wD/AfwP4B/A/gH8D+A/gf4AeeAH8P8H+AfwH8B/gAD/AP8B/A/wP8D+A/gP4D+A/gDx8Afg/wP4D/AfwH+AAf8A/wH8B/h/wH8D+A/gP8B/A+D4B+D/A/wf8B/Af4AD/8H/A/4H///gP4/wH/B/4D//wP8fwf+B///+P+B/gA//9//P/4P///gf/8B//P/wH/+A//+D/8D///7/+H+AD//z/8//gP+f+Af/gH/8//AH/wDP/wP/wD/z/P/4f4AAAAAAAAAAHhAAAPgAAAAAAAD4AADwAAAAB4BgAAB/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf4DAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/geAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+D8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP4PwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAfh/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/P8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//gAAAAAAAAAAAAAAAf4DgYc/5/HBgAAAAAAAAAAAAD/4AAAAAAAAAAAAAAAB/weDjz/n+MOAAAAAAAAAAAAAB8AAAAAAAAAAAAAAAAGHB8OOOAYc4wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYcOw5w4Bgx3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/w7j+D/GDH4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH+DOP4P8YcPgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAccc8/w4B/gcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABg5/z3DgH8BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGDv/OOOAY4HAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf8wO4c/5hwcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB/nAZg7/mHBwAAAAAAAAAAAAAAAA=';
+const W = 32;
+const rp = n => 'Rp' + Math.round(Number(n)||0).toLocaleString('id-ID');
+const clean = t => String(t||'').replace(/·/g,'-').normalize('NFD').replace(/[^\x20-\x7E]/g,'').replace(/\s+/g,' ').trim();
+const center = t => { t=clean(t).slice(0,W); return ' '.repeat(Math.floor((W-t.length)/2)) + t; };
+const lr = (l,r) => { const ind=(String(l).match(/^ */)||[''])[0]; l=ind+clean(l); r=clean(r); const g=W-l.length-r.length; return g>=1 ? l+' '.repeat(g)+r : l.slice(0,W)+'\n'+' '.repeat(Math.max(0,W-r.length))+r; };
+const wrap = t => { t=clean(t); const o=[]; while(t.length>W){ let i=t.lastIndexOf(' ',W); if(i<=0) i=W; o.push(t.slice(0,i)); t=t.slice(i).trim(); } if(t) o.push(t); return o; };
+const hr = '-'.repeat(W);
+
+function buildLines(d){
+  const L = [];
+  L.push(center(BRANCHES[d.branch_id]||''));
+  L.push(center(new Date(d.created_at).toLocaleString('id-ID',{timeZone:'Asia/Jakarta'})));
+  L.push(center('Kasir: '+(d.cashier_name||'-')+' - #'+d.id));
+  if(d.customer_name){ L.push(''); L.push(center('NOTA')); L.push(center('Kepada: '+d.customer_name)); }
+  L.push(hr);
+  (d.items||[]).forEach(i=>{
+    wrap(i.product_name + (i.is_gift?' (GRATIS)':'')).forEach(x=>L.push(x));
+    const sub = '  '+i.qty+' x @'+rp(i.unit_price), tot = i.is_gift ? 'Rp0' : rp(i.qty*i.unit_price);
+    L.push(lr(sub, tot));
+    if(!i.is_gift && Number(i.item_discount)>0) L.push(lr('  Diskon', '-'+rp(i.item_discount)));
+  });
+  L.push(hr);
+  L.push(lr('Subtotal', rp(d.subtotal)));
+  if(Number(d.discount_total)>0) L.push(lr('Diskon', '-'+rp(d.discount_total)));
+  L.push(lr('TOTAL', rp(d.grand_total)));
+  L.push(lr('Bayar ('+(PAY[d.payment_method]||d.payment_method)+')', d.cash_received!=null ? rp(d.cash_received) : rp(d.grand_total)));
+  if(d.cash_change!=null) L.push(lr('Kembali', rp(d.cash_change)));
+  L.push(hr);
+  L.push(center('Terima kasih!'));
+  return L.join('\n').split('\n');
+}
+function logoCanvas(){
+  const c=document.createElement('canvas'); c.width=LOGO_W; c.height=LOGO_H;
+  const ctx=c.getContext('2d'), id=ctx.createImageData(LOGO_W,LOGO_H), raw=atob(LOGO_B64), wB=LOGO_W/8;
+  for(let y=0;y<LOGO_H;y++) for(let x=0;x<LOGO_W;x++){ const on=raw.charCodeAt(y*wB+(x>>3))&(0x80>>(x&7)); const k=(y*LOGO_W+x)*4, v=on?0:255; id.data[k]=id.data[k+1]=id.data[k+2]=v; id.data[k+3]=255; }
+  ctx.putImageData(id,0,0); return c;
+}
+function receiptCanvas(lines){
+  const S=2, CW=384*S, PAD=14*S, c=document.createElement('canvas'), ctx=c.getContext('2d');
+  ctx.font='bold '+(20*S)+'px "Courier New", monospace';
+  const fs=Math.floor(20*S*(CW-PAD*2)/(ctx.measureText('M').width*W)), lh=Math.round(fs*1.35), lw=LOGO_W*S, lhh=LOGO_H*S;
+  c.width=CW; c.height=PAD+lhh+12*S+lines.length*lh+PAD;
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.imageSmoothingEnabled=false; ctx.drawImage(logoCanvas(),(CW-lw)/2,PAD,lw,lhh);
+  ctx.fillStyle='#000'; ctx.font='bold '+fs+'px "Courier New", monospace'; ctx.textBaseline='top';
+  let y=PAD+lhh+12*S; lines.forEach(l=>{ ctx.fillText(l,PAD,y); y+=lh; });
+  const img=ctx.getImageData(0,0,c.width,c.height), p=img.data;
+  for(let i=0;i<p.length;i+=4){ const v=(p[i]*.3+p[i+1]*.59+p[i+2]*.11)<170?0:255; p[i]=p[i+1]=p[i+2]=v; p[i+3]=255; }
+  ctx.putImageData(img,0,0); return c;
+}
+async function sharePDF(d, lines){
+  try{
+    const c=receiptCanvas(lines), wMM=58, hMM=wMM*c.height/c.width;
+    const doc=new window.jspdf.jsPDF({unit:'mm',format:[wMM,hMM]});
+    doc.addImage(c.toDataURL('image/png'),'PNG',0,0,wMM,hMM);
+    const name='struk-IB-'+d.id+'.pdf', file=new File([doc.output('blob')],name,{type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})) await navigator.share({files:[file],title:name});
+    else { const a=document.createElement('a'); a.href=URL.createObjectURL(file); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+  }catch(e){ if(!e || e.name!=='AbortError') alert('Gagal bikin PDF'); }
+}
+(async function(){
+  const app=document.getElementById('app');
+  const t=new URLSearchParams(location.search).get('t');
+  if(!t){ app.innerHTML='<div class="msg">🍞<br><br>Scan QR di struk kamu ya.</div>'; return; }
+  const { data, error } = await sb.rpc('get_public_receipt', { p_token: t });
+  if(error || !data){ app.innerHTML='<div class="msg">🍞<br><br>Struk tidak ditemukan.<br>Coba scan ulang QR di struk ya.</div>'; return; }
+  const lines = buildLines(data);
+  app.innerHTML = '<div class="card"><img class="logo" alt="Indonesian Bakery"><pre></pre></div><button class="btn">📄 Download / Bagikan PDF</button><div class="muted">Struk digital · Indonesian Bakery</div>';
+  app.querySelector('.logo').src = logoCanvas().toDataURL('image/png');
+  app.querySelector('pre').textContent = lines.join('\n');
+  app.querySelector('.btn').onclick = ()=>sharePDF(data, lines);
+})();
+</script>
+</body>
+</html>
